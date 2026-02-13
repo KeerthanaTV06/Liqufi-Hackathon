@@ -1,0 +1,12 @@
+{
+  "wallet": "0x74d1cdab3d434c610befa65c3bb30f602846939e",
+  "verdict": "TRUST SAFE",
+  "block": 0,
+  "reason": "No irreversible authority events detected",
+  "details": {
+    "total_breaches": 0,
+    "edges_analyzed": 2,
+    "wallet_mismatch": false,
+    "triggered_rules": []
+  }
+}

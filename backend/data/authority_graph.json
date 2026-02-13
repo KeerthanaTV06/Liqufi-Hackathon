@@ -1,0 +1,22 @@
+{
+  "wallet": "0x74d1cdab3d434c610befa65c3bb30f602846939e",
+  "generated_at": "2026-02-13T08:16:33.306130Z",
+  "authority_edges": [
+    {
+      "type": "token_approval",
+      "contract": "0xc09e2820640fbe928218382237d0927b691d6d90",
+      "spender": "0xe37c0a8b891013fca5d0e259665f5c7a3e201ab7",
+      "amount": "500000000000000000000",
+      "block": 18446963,
+      "timestamp": 1770470593
+    },
+    {
+      "type": "role_revoke",
+      "contract": "0x6ac8eb28ec450c822b1c720e7898207f7b1df1a7",
+      "role": "ADMIN_ROLE",
+      "grantee": "0x78204b7cb0f8648df857a864293454c7e5801745",
+      "block": 18447463,
+      "timestamp": 1770720593
+    }
+  ]
+}
