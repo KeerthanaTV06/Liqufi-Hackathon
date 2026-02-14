@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authority Graph Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        #graph {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .node {
+            cursor: pointer;
+        }
+
+        .node circle {
+            stroke: #fff;
+            stroke-width: 3px;
+        }
+
+        .node text {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 2px;
+        }
+
+        .link-label {
+            font-size: 10px;
+            fill: #666;
+            background: white;
+            padding: 2px 4px;
+        }
+
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+
+        .legend-color {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+            border: 2px solid white;
+        }
+
+        .info-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            border-radius: 5px;
+        }
+
+        .info-panel h3 {
+            margin-top: 0;
+            color: #1976D2;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 5px;
+            pointer-events: none;
+            font-size: 12px;
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔐 Authority Graph Visualization</h1>
+        <p class="subtitle">Interactive visualization of blockchain authority relationships</p>
+
+        <div id="graph"></div>
+
+        <div class="legend">
+            <strong>Legend:</strong><br><br>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #4CAF50;"></span>
+                <span>Wallet</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #2196F3;"></span>
+                <span>Token Contract</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #FF9800;"></span>
+                <span>NFT Contract</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color" style="background: #F44336;"></span>
+                <span>Target Entity (DEX/Marketplace)</span>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>📊 Graph Information</h3>
+            <p><strong>Nodes:</strong> Represent wallets, contracts, and target entities</p>
+            <p><strong>Edges:</strong> Represent authority grants (approvals)</p>
+            <p><strong>Interaction:</strong> Hover over nodes and edges to see details. Drag nodes to rearrange.</p>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Sample authority graph data
+        const authorityData = {
+            "0xAlice": {
+                "wallet": "0xAlice",
+                "authority_edges": [
+                    {
+                        "type": "token_approval",
+                        "contract": "0xUSDT",
+                        "target_entity": "0xUniswap",
+                        "amount": "unlimited",
+                        "block": 18392000,
+                        "timestamp": 1712345600
+                    },
+                    {
+                        "type": "token_approval",
+                        "contract": "0xUSDC",
+                        "target_entity": "0xUniswap",
+                        "amount": "1000000000000000000",
+                        "block": 18392005,
+                        "timestamp": 1712345650
+                    },
+                    {
+                        "type": "nft_approval_all",
+                        "contract": "0xBAYC",
+                        "target_entity": "0xOpenSea",
+                        "amount": "unlimited",
+                        "block": 18392010,
+                        "timestamp": 1712345670
+                    }
+                ]
+            },
+            "0xBob": {
+                "wallet": "0xBob",
+                "authority_edges": [
+                    {
+                        "type": "token_approval",
+                        "contract": "0xUSDT",
+                        "target_entity": "0xSushiSwap",
+                        "amount": "unlimited",
+                        "block": 18392008,
+                        "timestamp": 1712345660
+                    },
+                    {
+                        "type": "token_approval",
+                        "contract": "0xDAI",
+                        "target_entity": "0xUniswap",
+                        "amount": "500000000000000000",
+                        "block": 18392012,
+                        "timestamp": 1712345680
+                    }
+                ]
+            },
+            "0xCharlie": {
+                "wallet": "0xCharlie",
+                "authority_edges": [
+                    {
+                        "type": "nft_approval_all",
+                        "contract": "0xCryptoPunks",
+                        "target_entity": "0xOpenSea",
+                        "amount": "unlimited",
+                        "block": 18392015,
+                        "timestamp": 1712345690
+                    }
+                ]
+            }
+        };
+
+        // Transform data into graph format
+        function transformToGraph(data) {
+            const nodes = [];
+            const links = [];
+            const nodeMap = new Map();
+
+            function addNode(id, type, label) {
+                if (!nodeMap.has(id)) {
+                    nodes.push({ id, type, label });
+                    nodeMap.set(id, true);
+                }
+            }
+
+            // Process each wallet
+            Object.values(data).forEach(walletData => {
+                const wallet = walletData.wallet;
+                addNode(wallet, 'wallet', wallet);
+
+                walletData.authority_edges.forEach(edge => {
+                    const contract = edge.contract;
+                    const target = edge.target_entity;
+
+                    // Determine contract type
+                    const contractType = edge.type.includes('nft') ? 'nft' : 'token';
+                    addNode(contract, contractType, contract);
+                    addNode(target, 'target', target);
+
+                    // Create links: wallet -> contract -> target
+                    links.push({
+                        source: wallet,
+                        target: contract,
+                        type: 'owns',
+                        label: 'owns tokens'
+                    });
+
+                    links.push({
+                        source: contract,
+                        target: target,
+                        type: 'approval',
+                        label: `${edge.type}\n${edge.amount}`,
+                        amount: edge.amount,
+                        block: edge.block,
+                        approvalType: edge.type
+                    });
+                });
+            });
+
+            return { nodes, links };
+        }
+
+        // Create visualization
+        const graphData = transformToGraph(authorityData);
+
+        const width = document.getElementById('graph').clientWidth;
+        const height = 600;
+
+        const svg = d3.select('#graph')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Define arrow markers
+        svg.append('defs').selectAll('marker')
+            .data(['approval', 'owns'])
+            .enter().append('marker')
+            .attr('id', d => `arrow-${d}`)
+            .attr('viewBox', '0 -5 10 10')
+            .attr('refX', 25)
+            .attr('refY', 0)
+            .attr('markerWidth', 6)
+            .attr('markerHeight', 6)
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M0,-5L10,0L0,5')
+            .attr('fill', d => d === 'approval' ? '#F44336' : '#999');
+
+        // Color mapping
+        const colorMap = {
+            wallet: '#4CAF50',
+            token: '#2196F3',
+            nft: '#FF9800',
+            target: '#F44336'
+        };
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(graphData.nodes)
+            .force('link', d3.forceLink(graphData.links).id(d => d.id).distance(150))
+            .force('charge', d3.forceManyBody().strength(-500))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(50));
+
+        // Create links
+        const link = svg.append('g')
+            .selectAll('line')
+            .data(graphData.links)
+            .enter().append('line')
+            .attr('class', 'link')
+            .attr('marker-end', d => `url(#arrow-${d.type})`)
+            .style('stroke', d => d.type === 'approval' ? '#F44336' : '#999')
+            .style('stroke-width', d => d.type === 'approval' ? 3 : 2);
+
+        // Create nodes
+        const node = svg.append('g')
+            .selectAll('g')
+            .data(graphData.nodes)
+            .enter().append('g')
+            .attr('class', 'node')
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        node.append('circle')
+            .attr('r', d => d.type === 'wallet' ? 25 : 20)
+            .attr('fill', d => colorMap[d.type]);
+
+        node.append('text')
+            .attr('dy', 35)
+            .attr('text-anchor', 'middle')
+            .text(d => d.label.substring(0, 10) + (d.label.length > 10 ? '...' : ''))
+            .style('fill', '#333');
+
+        // Tooltip
+        const tooltip = d3.select('#tooltip');
+
+        node.on('mouseover', function (event, d) {
+            tooltip.style('display', 'block')
+                .html(`<strong>${d.type.toUpperCase()}</strong><br>${d.label}`)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
+        })
+            .on('mouseout', function () {
+                tooltip.style('display', 'none');
+            });
+
+        link.on('mouseover', function (event, d) {
+            if (d.type === 'approval') {
+                tooltip.style('display', 'block')
+                    .html(`<strong>Approval</strong><br>Type: ${d.approvalType}<br>Amount: ${d.amount}<br>Block: ${d.block}`)
+                    .style('left', (event.pageX + 10) + 'px')
+                    .style('top', (event.pageY - 10) + 'px');
+            }
+        })
+            .on('mouseout', function () {
+                tooltip.style('display', 'none');
+            });
+
+        // Update positions
+        simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            node.attr('transform', d => `translate(${d.x},${d.y})`);
+        });
+
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+    </script>
+</body>
+
+</html>

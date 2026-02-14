@@ -1,0 +1,79 @@
+name: Member C - Authority Graph Builder CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-javascript:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Run JavaScript tests
+      run: |
+        cd Authority-Graph
+        node tests/test-authority-graph-builder.js
+    
+    - name: Run JavaScript examples
+      run: |
+        cd Authority-Graph
+        node examples/example-usage.js
+
+  test-python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Run Python tests
+      run: |
+        cd Authority-Graph
+        python tests/test_authority_graph_builder.py
+    
+    - name: Run Python examples
+      run: |
+        cd Authority-Graph
+        python examples/example_usage.py
+
+  determinism-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Verify determinism across languages
+      run: |
+        cd Authority-Graph
+        echo "Running determinism verification..."
+        node tests/test-authority-graph-builder.js
+        python tests/test_authority_graph_builder.py

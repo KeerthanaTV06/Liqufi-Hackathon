@@ -1,0 +1,29 @@
+{
+  "name": "pointzero-member-c-authority-graph",
+  "version": "1.0.0",
+  "description": "Member C: Pure transformation layer for PointZero irreversibility analysis pipeline",
+  "main": "src/javascript/authority-graph-builder.js",
+  "scripts": {
+    "test": "node tests/javascript/test-authority-graph-builder.js",
+    "example": "node examples/javascript/example-usage.js"
+  },
+  "keywords": [
+    "blockchain",
+    "authority",
+    "graph",
+    "transformation",
+    "deterministic",
+    "ethereum",
+    "approval",
+    "security"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/member-c-authority-graph.git"
+  }
+}
